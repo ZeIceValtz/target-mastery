@@ -1,17 +1,56 @@
 using UnityEngine;
+using System;
 
-public abstract class BaseTarget : MonoBehaviour
+public abstract class BaseTarget : MonoBehaviour, IScoreAdder
 {
-    [field: SerializeField]
-    protected Transform AnchorPoint { get; private set; }
+    [SerializeField]
+    private Transform m_anchorPoint;
+    [SerializeField]
+    private TargetSegment[] m_targetSegments;
 
-    protected ITargetStandInfoProvider TargetStand { get; private set; }
+    protected Transform AnchorPoint => m_anchorPoint;
+    protected TargetSegment[] TargetSegments => m_targetSegments;
+    protected ITargetStandInfoProvider TargetStandInfo { get; private set; }
 
-    public virtual void PlaceSelf(Vector3 position, ITargetStandInfoProvider targetStand)
+    public event Action<int> OnAddScore;
+
+    public void Initialize()
     {
-        transform.position = position - AnchorPoint.localPosition;
-        TargetStand = targetStand;
+        foreach (TargetSegment segment in m_targetSegments)
+        {
+            segment.OnHit += HandleTargetHit;
+        }
+        OnInitialize();
     }
 
-    public abstract void Recycle();
+    public void PlaceSelf(Vector3 position, ITargetStandInfoProvider standInfo)
+    {
+        transform.position = position - AnchorPoint.localPosition;
+        TargetStandInfo = standInfo;
+        OnTargetPlaced();
+    }
+
+    public void Recycle()
+    {
+        OnRecycle();
+        foreach (TargetSegment segment in m_targetSegments)
+        {
+            segment.OnHit -= HandleTargetHit;
+            Destroy(segment.gameObject);
+        }
+        Destroy(m_anchorPoint);
+        Destroy(gameObject);
+    }
+
+    protected abstract void OnInitialize();
+    protected abstract void OnRecycle();
+    protected virtual void OnTargetHit() { }
+    protected virtual void OnTargetPlaced() { }
+
+    private void HandleTargetHit(TargetSegment segment)
+    {
+        int scrore = segment.HitValue;
+        OnAddScore?.Invoke(scrore);
+        OnTargetHit();
+    }
 }

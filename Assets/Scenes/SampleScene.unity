@@ -1445,6 +1445,7 @@ MonoBehaviour:
   - {fileID: 1856566033}
   - {fileID: 2141243378}
   m_isLooped: 1
+  m_targetSpeed: 3.8
 --- !u!4 &1764069749
 Transform:
   m_ObjectHideFlags: 0
@@ -1554,6 +1555,7 @@ MonoBehaviour:
   - {fileID: 12805558}
   - {fileID: 811675788}
   m_isLooped: 0
+  m_targetSpeed: 6.7
 --- !u!1 &2141243377
 GameObject:
   m_ObjectHideFlags: 0

@@ -4,15 +4,17 @@ using System;
 public abstract class BaseTarget : MonoBehaviour, IScoreAdder
 {
     [SerializeField]
-    private Transform m_anchorPoint;
+    private Transform m_standAttachmentPoint;
     [SerializeField]
     private TargetSegment[] m_targetSegments;
 
-    protected Transform AnchorPoint => m_anchorPoint;
+    protected Transform StandAttachmentPoint => m_standAttachmentPoint;
     protected TargetSegment[] TargetSegments => m_targetSegments;
     protected ITargetStandInfoProvider TargetStandInfo { get; private set; }
 
     public event Action<int> OnAddScore;
+
+    private bool m_isInitialized = false;
 
     public void Initialize()
     {
@@ -21,11 +23,15 @@ public abstract class BaseTarget : MonoBehaviour, IScoreAdder
             segment.OnHit += HandleTargetHit;
         }
         OnInitialize();
+        m_isInitialized = true;
     }
 
     public void PlaceSelf(Vector3 position, ITargetStandInfoProvider standInfo)
     {
-        transform.position = position - AnchorPoint.localPosition;
+        if (!m_isInitialized)
+            throw new Exception("Target is not initialized. You must call Initialize function, before placing it.");
+
+        transform.position = position - StandAttachmentPoint.localPosition;
         TargetStandInfo = standInfo;
         OnTargetPlaced();
     }
@@ -36,9 +42,10 @@ public abstract class BaseTarget : MonoBehaviour, IScoreAdder
         foreach (TargetSegment segment in m_targetSegments)
         {
             segment.OnHit -= HandleTargetHit;
-            Destroy(segment.gameObject);
+            if (segment.gameObject != gameObject)
+                Destroy(segment.gameObject);
         }
-        Destroy(m_anchorPoint);
+        Destroy(m_standAttachmentPoint);
         Destroy(gameObject);
     }
 

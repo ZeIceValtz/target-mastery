@@ -5,37 +5,24 @@ public class StaticStand : BaseTargetStand
     [SerializeField]
     private Transform m_targetAttachmentPoint;
 
-    private BaseTarget m_target;
-
-    public override float GetSpeed()
-    {
-        return 0;
-    }
-
     public override Vector3 GetNextDestinationPoint()
     {
         return m_targetAttachmentPoint.position;
     }
 
-    public override void Clear()
+    public override float GetSpeed()
     {
-        m_target?.Recycle();
-        m_target = null;
+        return 0.0f;
     }
 
-    public override void Recycle()
+    protected override Vector3 GetTargetPlacement()
     {
-        Clear();
-        Destroy(gameObject);
+        return m_targetAttachmentPoint.position;
     }
 
-    public override bool TryPlaceTarget(BaseTarget target)
+    protected override void OnRecycle()
     {
-        if (m_target != null)
-            return false;
-
-        m_target = target;
-        target.PlaceSelf(m_targetAttachmentPoint.position, this);
-        return true;
+        if (m_targetAttachmentPoint.gameObject != gameObject)
+            Destroy(m_targetAttachmentPoint);
     }
 }

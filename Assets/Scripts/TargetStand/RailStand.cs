@@ -6,69 +6,58 @@ public class RailStand : BaseTargetStand
     [SerializeField]
     private Transform[] m_railPoints;
     [SerializeField]
-    private bool m_isLooped = false;
+    private bool m_isLooped;
+    [SerializeField] [Range(1, 10)]
+    private float m_targetSpeed = 5f;
 
-    private int m_currentDestinationIndex = 0;
-    private int m_direction = 1;
-    private BaseTarget m_target;
+    private int m_currentDirection = 1;
+    private int m_currentDestinationIndex;
 
     private void Awake()
     {
-        foreach(Transform railPoint in m_railPoints)
-        {
-            if (railPoint.parent != transform)
-                railPoint.SetParent(transform);
-        }
-
-        if (Random.Range(0f, 1f) > 0.5f)
-            m_direction = 1;
-        else
-            m_direction = -1;
-    }
-
-    public override float GetSpeed()
-    {
-        return 5;
+        if (m_railPoints.Length < 2)
+            throw new UnityException("RailStand must have at least two Rail Points.");
     }
 
     public override Vector3 GetNextDestinationPoint()
     {
         Vector3[] railPoints = GetRailPoints();
-        m_currentDestinationIndex = GetNextPointIndex(m_currentDestinationIndex, railPoints.Length, m_isLooped);
+        m_currentDestinationIndex = GetNextIndex(m_currentDestinationIndex, railPoints.Length, m_currentDirection, m_isLooped);
+
+        // changing direction if hit a deadlock
+        if (!m_isLooped)
+        {
+            if (m_currentDestinationIndex == 0)
+                m_currentDirection = 1;
+            else if (m_currentDestinationIndex == railPoints.Length - 1)
+                m_currentDirection = -1;
+        }
+
         return railPoints[m_currentDestinationIndex];
     }
 
-    public override void Clear()
+    public override float GetSpeed()
     {
-        m_target?.Recycle();
-        m_target = null;
+        return m_targetSpeed;
     }
 
-    public override bool TryPlaceTarget(BaseTarget target)
+    protected override Vector3 GetTargetPlacement()
     {
-        if (m_target != null)
-            return false;
-
-        m_target = target;
-
         Vector3[] railPoints = GetRailPoints();
-
-        // get random position on a random rail to spawn target there
         int randomPointIndex = Random.Range(0, railPoints.Length);
-        int nearbyPointIndex = GetNextPointIndex(randomPointIndex, railPoints.Length, m_isLooped);
-        Vector3 randomEndPoint = railPoints[randomPointIndex];
-        Vector3 nearbyEndPoint = railPoints[nearbyPointIndex];
-        Vector3 randomPosition = RandomPositionBetween(randomEndPoint, nearbyEndPoint);
-        target.PlaceSelf(randomPosition, this);
-
+        int nearbyPointIndex = GetNextIndex(randomPointIndex, railPoints.Length, 1, m_isLooped);
+        Vector3 randomRailPosition = RandomPositionBetween(railPoints[randomPointIndex], railPoints[nearbyPointIndex]);
         m_currentDestinationIndex = randomPointIndex;
-        return true;
+        return randomRailPosition;
     }
 
-    public override void Recycle()
+    protected override void OnRecycle()
     {
-        Clear();
-        Destroy(gameObject);
+        foreach (Transform point in m_railPoints)
+        {
+            if (point.gameObject != gameObject)
+                Destroy(point);
+        }
     }
 
     private Vector3[] GetRailPoints()
@@ -81,20 +70,28 @@ public class RailStand : BaseTargetStand
         return railPoints.ToArray();
     }
 
-    private int GetNextPointIndex(int current, int length, bool isLooped)
-    {
-        if (isLooped)
-            return (int)Mathf.Repeat(current + m_direction, length);
-
-        if (current + m_direction == length || current + m_direction < 0)
-            m_direction *= -1;
-
-        return current + m_direction;
-    }
-
     private Vector3 RandomPositionBetween(Vector3 a, Vector3 b)
     {
         float distanceMultiplier = Random.Range(0f, 1f);
         return Vector3.Lerp(a, b, distanceMultiplier);
+    }
+
+    private int GetNextIndex(int current, int length, int direction, bool isLooped)
+    {
+        if (current < 0 || length < 0)
+            throw new System.ArgumentOutOfRangeException("current, length", "Arguments must be of positive value.");
+
+        if (Mathf.Abs(direction) != 1)
+            throw new System.ArgumentOutOfRangeException("direction", "Direction can only be euqal to 1 or -1.");
+
+        if (isLooped)
+            return (int)Mathf.Repeat(current + direction, length);
+
+        if (current + direction == length)
+            return current - 1;
+        else if (current + direction == -1)
+            return current + 1;
+
+        return current + direction;
     }
 }

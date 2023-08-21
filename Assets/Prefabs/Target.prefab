@@ -182,4 +182,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 89ad96c093c94a34fb970610fd06a20c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  <AnchorPoint>k__BackingField: {fileID: 1103889247934014461}
+  m_standAttachmentPoint: {fileID: 1103889247934014461}
+  m_targetSegments: []

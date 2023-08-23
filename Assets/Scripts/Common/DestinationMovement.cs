@@ -72,7 +72,7 @@ public class DestinationMovement
     {
         current++;
 
-        if (current == m_destinations.Count)
+        if (current >= m_destinations.Count)
             return 0;
 
         return current;

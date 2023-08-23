@@ -6,19 +6,23 @@ public class GameFieldGenerator : MonoBehaviour
     private GameField m_gameField;
     [SerializeField]
     private TargetFactory m_targetFactory;
+    [SerializeField]
+    private Knife m_knife;
 
     private void Awake()
     {
-        BaseTargetStand targetStand = m_gameField.GetTargetStand(0);
-        BaseTargetStand targetStand1 = m_gameField.GetTargetStand(1);
-        m_gameField.TryPlaceTarget(m_targetFactory.CreateTarget(TargetType.Moving), targetStand);
-        m_gameField.TryPlaceTarget(m_targetFactory.CreateTarget(TargetType.Moving), targetStand1);
+        BaseStand targetStand = m_gameField.GetTargetStand(0);
+        BaseTarget target = m_targetFactory.CreateTarget(TargetType.Moving);
+        target.Initialize();
+        //m_gameField.TryPlace(target, targetStand);
+
+        
     }
 
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.Space))
-            m_gameField.Clear();
+            m_gameField.TryPlace(m_knife, m_gameField.GetTargetStand(0));
     }
 
     

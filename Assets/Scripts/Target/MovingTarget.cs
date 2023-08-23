@@ -26,7 +26,6 @@ public class MovingTarget : BaseTarget
 
     protected override void OnTargetPlaced()
     {
-        
         MoveToNextPoint();
     }
 

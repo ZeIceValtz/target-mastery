@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class RailStand : BaseTargetStand
+public class RailStand : BaseStand
 {
     [SerializeField]
     private Transform[] m_railPoints;
@@ -41,7 +41,7 @@ public class RailStand : BaseTargetStand
         return m_targetSpeed;
     }
 
-    protected override Vector3 GetTargetPlacement()
+    protected override Vector3 GetPlacementPosition()
     {
         Vector3[] railPoints = GetRailPoints();
         int randomPointIndex = Random.Range(0, railPoints.Length);

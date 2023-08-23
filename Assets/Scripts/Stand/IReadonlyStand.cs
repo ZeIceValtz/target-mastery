@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public interface ITargetStandInfoProvider
+public interface IReadonlyStand
 {
     float GetSpeed();
     Vector3 GetNextDestinationPoint();
